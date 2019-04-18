@@ -1,0 +1,3 @@
+C:/C_Course_Design/GameBaseOnSat/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/C_Course_Design/GameBaseOnSat/cmake-build-debug/CMakeFiles/GameBaseOnSat.dir
+C:/C_Course_Design/GameBaseOnSat/cmake-build-debug/CMakeFiles/edit_cache.dir

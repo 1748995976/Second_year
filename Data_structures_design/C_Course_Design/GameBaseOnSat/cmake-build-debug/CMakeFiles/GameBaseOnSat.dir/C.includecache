@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/C_Course_Design/GameBaseOnSat/dpll.c
+windef.h
+-
+stdlib.h
+-
+stdio.h
+-
+dpll.h
+C:/C_Course_Design/GameBaseOnSat/dpll.h
+
+C:/C_Course_Design/GameBaseOnSat/dpll.h
+stdbool.h
+-
+readandselect.h
+C:/C_Course_Design/GameBaseOnSat/readandselect.h
+
+C:/C_Course_Design/GameBaseOnSat/readandselect.h
+
