@@ -1,0 +1,94 @@
+1 4 V1 1 1 V2 2 2 V3 3 3 V4 4 4 1 V1 V3 V2 * V3 V4 * V4 V1 * #
+Status CreateArc(Graphptr *G) {
+    //删除原有关系
+    cout << "若当前图的顶点已建立邻接关系，再次执行此操作会覆盖顶点之前建立的邻接关系!" << endl;
+    cout << "是否继续? 是：1   否：0" << endl;
+    int choice;
+    if (cin >> choice && choice == 0)
+        return OK;
+    //建立新的关系
+    int a = 0;//当前顶点索引
+    int b = 0;//被指顶点的索引
+    cout << "所有的顶点信息如下:" << endl;
+    for (int i = 0; i < (*G)->number; i++) {
+        cout << i + 1 << ":  " << "\nID: " << (*G)->elemtype[i].id
+             << "\nName:" << (*G)->elemtype[i].name
+             << "\nBirth: " << (*G)->elemtype[i].birth
+             << endl;
+    }
+    ElemType search;
+    while (true) {
+        cout << "请输入要建立关系的顶点的学号(学号输入 # 停止建立关系)" << endl;
+        cin >> search.id;
+        if (!strcmp("#", search.id))
+            break;
+        for (a = 0; a < (*G)->number; a++) {
+            if (!strcmp(search.id, (*G)->elemtype[a].id))
+                break;
+            if (a == (*G)->number - 1)
+                cout << "无符合关系的顶点" << endl;
+        }
+        if (a == (*G)->number) {
+            cout << "请重新输入要建立关系的顶点的学号(学号输入 # 停止建立关系)" << endl;
+            continue;
+        } else {
+            ElemType e;
+            while (true) {
+                cout << "请输入学号: " << (*G)->elemtype[a].id << "顶点所指向顶点的学号(输入 * 结束输入)" << endl;
+                cin >> e.id;
+                if (!strcmp(e.id, "*"))
+                    break;
+                for (b = 0; b < (*G)->number; b++) {
+                    if (!strcmp(e.id, (*G)->elemtype[b].id))
+                        break;
+                    if (b == (*G)->number - 1)
+                        cout << "无符合关系的顶点" << endl;
+                }
+                if (b == (*G)->number) {
+                    cout << "请重新输入学号: " << (*G)->elemtype[a].id << "顶点所指向结点的学号(输入 * 结束输入)" << endl;
+                    continue;
+                } else {
+                    ElemNext *elem = (ElemNext *) malloc(sizeof(ElemNext));
+                    elem->next_elem = nullptr;
+                    elem->current = b;
+                    ElemNext *P;
+                    if ((*G)->elemtype[a].next_elem == nullptr)
+                        (*G)->elemtype[a].next_elem = elem;
+                    else {
+                        for (P = (*G)->elemtype[a].next_elem; P->next_elem != nullptr; P = P->next_elem);
+                        P->next_elem = elem;
+                    }
+                }
+            }
+        }
+    }
+    cout << "建立邻接表成功!" << endl;
+    return OK;
+}
+
+Status CreateGraph(Graphptr *G) {
+    if ((*G)->number != 0) {
+        cout << "当前图不为空图，请销毁后再创建!" << endl;
+        return OK;
+    }
+    int number;
+    cout << "请输入顶点的数目:" << endl;
+    while (cin >> number) {
+        if (number > 0)
+            break;
+        else
+            cout << "顶点数目不合法，请重新输入!" << endl;
+    }
+    (*G)->elemtype = (ElemType *) malloc(number * sizeof(ElemType));
+    (*G)->number = number;
+    for (int i = 0; i < number; ++i) {
+        (*G)->elemtype[i].next_elem = nullptr;
+    }
+    for (int i = 0; i < number; ++i) {
+        cout << "请依次输入第" << i + 1 << "顶点的学生学号、姓名以及出生日期(每条信息不超过20个字符)" << endl;
+        cin >> (*G)->elemtype[i].id >> (*G)->elemtype[i].name >> (*G)->elemtype[i].birth;
+    }
+    cout << "输入完成!" << endl;
+    cout << "创建图成功!" << endl;
+    return OK;
+}

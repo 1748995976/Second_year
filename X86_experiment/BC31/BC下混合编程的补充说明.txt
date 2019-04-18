@@ -1,0 +1,35 @@
+BC31下实现C语言与汇编语言混合编程的示例，在汇编教学网站“资料下载”的“软件”下
+有个C_ASM.RAR可供参考。下面对该示例中没有反映的问题给出补充说明。
+
+1. 在C语言中使用“asm”嵌入汇编语句，如果报错说不识别32位寄存器，请在C源程序前面加上
+语句“#pragma inline”。当然，BC的“Options”下“Compiler”的高级代码生成选项中要选择80386的指令集。
+
+2.若在C语言中使用“asm”嵌入的汇编语句序列中用到标号，请将标号定义在asm语句之前（外）。
+例如：
+L1: asm  ADD ax,bx
+    asm  JNZ L1
+
+3.若出现因形如“变量名[32位寄存器]”表达式导致的“32-bit record encountered”错误，则是因为
+BC里的连接程序TLINK默认处理16位段造成的。比较简单的处理方式是利用BC31提供的命令行程序BCC.EXE
+对已经编译通过的OBJ文件进行连接。具体操作如下：
+C:\BORLANDC\BIN>bcc -l3 main.obj mod1.obj mod2.obj
+执行之后一定要注意查看是否有出错信息。(-l3不一定非要写)
+
+另，请注意虚拟机MOUNT之后的目录，C盘下一定要以C:\BORLANDC为根目录，否则，BCC会找不到库文件，
+又要去修改BCC默认的目录设置。
+MOUNT之后进到C:\BORLANDC\BIN目录下，把各个模块的OBJ(main.obj,mod1.obj,mod2.obj)文件复制到该
+目录下，然后输入上述的BCC命令行即可。
+
+4.C程序的文件扩展名要用“*.C”，不要用“*.CPP”，因CPP的格式要求与示例程序“.C”的做法存在一些差异。
+
+5.混合编程用bcc也很方便。
+
+直接bcc x.c y.asm。
+如果报错“32-bit record encountered...”可加参数：bcc -l3 x.c y.asm。
+
+或者分步来：
+bcc -c y.asm（汇编，生成obj）
+bcc -c x.c（编译，生成obj）
+bcc x.obj y.obj（连接，生成x.exe）
+如果报错“32-bit record encountered...”可加参数：
+bcc -l3 x.obj y.obj

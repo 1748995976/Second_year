@@ -1,0 +1,383 @@
+.386
+DATA    SEGMENT USE16
+BNAME   DB 'ZHANCHENG',0
+BPASS   DB 'test',0,0
+N       EQU 500
+M		EQU 500
+CHANGE	DB 0AH,0DH,'$'
+LEAVES	DB '---------------',0AH,0DH,'$'
+SNAME   DB 'SHOP',0,'$'
+GA1     DB 'PEN',7 DUP(0),10
+	    DW 35,56,500,25,?
+GA2     DB N-2 DUP('TempValue',0,8,15,0,20,0,30,0,2,0,?,?)
+GA3     DB 'BOOK',6 DUP(0),9
+	    DW 12,30,500,5,?
+REMIND1	DB 'Please input your account number!',0AH,0DH,'$'
+REMIND2 DB 'Please input your password!',0AH,0DH,'$'
+REINPUT	DB 'The account number or password is not right.Please try again!',0AH,0DH,'$'
+REMIND3	DB 'Please input the name of commodity!',0AH,0DH,'$'
+REMIND4 DB 'There is not this commodity!Please try again!',0AH,0DH,'$'
+REMIND5 DB 'This commodity has been sold out!',0AH,0DH,'$'
+IN_NAME	DB 20
+		DB ?
+		DB 20 DUP(0)
+IN_PWD	DB 20
+		DB ?
+		DB 20 DUP(0)
+CO_NAME	DB 20
+		DB ?
+		DB 20 DUP(0)
+AUTH	DB 0
+DATA    ENDS
+STACK   SEGMENT USE16 STACK
+	    DW 50 DUP(0)
+STACK   ENDS
+CODE	SEGMENT USE16
+		ASSUME DS:DATA,SS:STACK,CS:CODE
+START:	MOV AX,DATA
+		MOV DS,AX
+		LEA DX,SNAME
+		MOV AH,9
+		INT 21H
+		
+		LEA DX,CHANGE
+		MOV	AH,9
+		INT 21H
+		
+		LEA DX,LEAVES
+		MOV AH,9
+		INT 21H
+		
+INPUT:	LEA DX,CHANGE
+		MOV	AH,9
+		INT 21H
+		
+		MOV AX,DATA
+		MOV DS,AX
+		
+		LEA DX,REMIND1
+		MOV AH,9
+		INT 21H
+		
+		LEA DX,IN_NAME
+		MOV AH,10
+		INT 21H
+		
+		LEA DX,CHANGE
+		MOV	AH,9
+		INT 21H
+		
+		LEA DX,REMIND2
+		MOV AH,9
+		INT 21H
+		
+		LEA DX,IN_PWD
+		MOV AH,10
+		INT 21H
+		
+		LEA DX,CHANGE
+		MOV	AH,9
+		INT 21H
+		
+DECIDE:	MOV AX,DATA
+		MOV DS,AX
+		
+CUST:	LEA DI,IN_NAME
+		ADD DI,2
+		
+		MOV AH,0DH
+		CMP AH,[DI]
+		JE	ISCUST
+		
+CUSTEND:NOP
+		
+WTQ_1:	MOV AH,'q'
+		CMP AH,[DI]
+		JE	WTQ_2
+		JMP SHORT READY
+		
+WTQ_2:	MOV AH,0DH
+		ADD DI,1
+		CMP	AH,[DI]
+		JE QUIT
+		
+WTQEND:	NOP
+		
+READY:	LEA BX,BNAME ;判断阶段的准备
+		LEA DI,IN_NAME
+		ADD DI,2
+		MOV SI,OFFSET IN_NAME + 1
+		MOV CL,[SI]
+		MOV CH,0
+		
+SACC:	MOV AH,[BX] ;循环判断账号是否正确
+		CMP AH,[DI]
+		JNE NOTR
+		ADD BX,1
+		ADD DI,1
+		LOOP SACC
+		
+		MOV AH,[BX]
+		CMP AH,0
+		JNE NOTR
+		
+SACCEND:NOP
+		
+		LEA BX,BPASS
+		LEA DI,IN_PWD
+		ADD DI,2
+		MOV SI,OFFSET IN_PWD + 1
+		MOV CL,[SI]
+		MOV CH,0
+		
+SPWD:	MOV AH,[BX] ; 循环判断密码是否正确
+		CMP AH,[DI]
+		JNE NOTR
+		ADD BX,1
+		ADD DI,1
+		LOOP SPWD
+		
+		MOV AH,[BX]
+		CMP AH,0
+		JNE NOTR
+		
+SPWDEND:JMP FAR PTR ISBOSS
+		
+NOTR:	LEA DX,REINPUT ;账号密码不对的情况
+		MOV AH,9
+		INT 21H
+		JMP FAR PTR INPUT
+
+ISCUST:	MOV	BX,OFFSET AUTH ;将判断的结果传入AUTH变量
+		MOV AH,0
+		MOV [BX],AH
+		JMP SHORT PSEARCH
+		
+ISBOSS:	MOV	BX,OFFSET AUTH ;将判断的结果传入AUTH变量
+		MOV AH,1
+		MOV [BX],AH
+		JMP SHORT PSEARCH
+		
+PSEARCH:LEA DX,REMIND3 ;提示用户输入商品的名称
+		MOV AH,9
+		INT 21H
+		
+		LEA DX,CO_NAME
+		MOV AH,10
+		INT 21H
+		
+		LEA DX,CHANGE
+		MOV	AH,9
+		INT 21H
+		
+		;插入循环和计时器
+		MOV CX,M
+		MOV AX,0
+		CALL FAR PTR TIMER
+		
+CIRCULE:PUSH CX
+
+		;计算所有商品的推荐度
+		LEA EBX,GA1
+		
+		MOV CX,N
+COMPUTE:PUSH CX
+
+		MOVZX EDX,WORD PTR[EBX+13];EDX 售价
+		CMP EDX,0
+		JE	LEVELA
+		MOVZX EAX,BYTE PTR [EBX+10];EAX 折扣*10
+		MUL	EDX;EDX存储高位，EAX存储低位
+		MOV ECX,EAX
+		
+		MOVZX EAX,WORD PTR [EBX+11];进价
+		MOV EDX,10
+		MUL EDX;EDX存储高位，EAX存储低位
+		SHLD EDX,EAX,7
+		SAL EAX,7
+		DIV ECX;EAX为商，EDX为余数
+		
+		MOV EDI,EAX;进价*1280与实际售价*折扣*10的商
+	
+		MOVZX ECX,WORD PTR[EBX+15];进货量
+		MOVZX EAX,WORD PTR [EBX+17];销售量
+		MOV EDX,0
+		SHLD EDX,EAX,7
+		SAL	EAX,7;EDX存储高位，EAX存储低位
+		DIV ECX;EAX为商，EDX为余数
+		
+		ADD EAX,EDI;商品推荐度
+		
+GIVE:	MOV [EBX+19],AX
+		ADD EBX,21
+		POP CX
+		LOOP COMPUTE
+		
+SEARCH:	;搜索商品是否存在
+		MOV CX,N;找到商店商品所在的地址
+		PUSH CX
+		LEA	EBX,GA1
+		PUSH EBX
+		
+		LEA EDI,CO_NAME+2;找到用户输入的商品所在的存储地址
+		MOVZX BP,BYTE PTR [EDI-1];记录输入商品的名称的长度
+		
+FJUDGE:	MOV AH,[EDI] ;判断输入商品名称时是否只输入了回车
+		CMP AH,0DH
+		JE	BACK
+		
+SJUDGE:	MOV CX,BP
+		LEA EDI,CO_NAME+2;找到用户输入的商品所在的存储地址
+		
+JUDGE:	MOV AH,[EBX] ;开始判断
+		CMP AH,[EDI]
+		JNE NOMARRY
+		INC EBX
+		INC EDI
+		LOOP JUDGE
+		
+		MOV AH,[EBX]
+		CMP AH,0
+		JNE NOMARRY
+		POP	EBX;此时已经找到，商品的偏移地址在EBX中存储
+		POP CX
+		MOV DX,N
+		SUB DX,CX
+		MOV CX,DX
+		JMP SHORT FOUND
+		
+NOMARRY:POP EBX
+		ADD EBX,21
+		POP CX
+		DEC CX
+		CMP CX,0
+		JE	NOTHAVE
+		PUSH CX
+		PUSH EBX
+		JMP SHORT SJUDGE
+			
+NOTHAVE:LEA DX,REMIND4
+		MOV AH,9
+		INT 21H
+		
+		;第一种情况的循环,没有找到商品
+		POP CX
+		MOV AX,1
+		CALL TIMER
+		
+		JMP FAR PTR PSEARCH
+		
+FOUND:	LEA EDI,AUTH
+		MOV AH,[EDI]
+		CMP AH,1;判断身份
+		JNE SELL;顾客
+		LEA EDI,CO_NAME;老板
+		ADD EDI,2
+		MOV CX,BP
+		
+OUTCO:	MOV DL,[EDI]
+		MOV AH,2
+		INT 21H
+		INC EDI
+		LOOP OUTCO
+		JMP FAR PTR INPUT
+		
+SELL:	;判断商品是否售罄
+		MOV DI,[EBX+17];已售数量
+		MOV SI,[EBX+15];进货量
+		CMP DI,SI
+		JNE RECOMM
+		;商品已卖空
+		LEA DX,REMIND5
+		MOV AH,9
+		INT 21H
+		
+		;第二种情况的循环，商品已卖空
+		POP CX
+		MOV AX,1
+		CALL TIMER
+		
+		JMP FAR PTR INPUT
+		
+		
+RECOMM:	;增加已售数量
+		INC DI
+		MOV [EBX+17],DI;已售数量增加
+		
+		;第三种情况的循环,找到商品，若商品售货量达到进货量，则进入第二种情况的循环
+		POP CX
+		DEC CX
+		CMP CX,0
+		JNE CIRCULE
+		MOV AX,1
+		CALL TIMER
+		
+		JMP FAR PTR INPUT
+		
+		
+QUIT:	MOV AH,4CH
+		INT 21H
+		
+LEVELA: MOV AX,111
+		JMP FAR PTR GIVE
+
+BACK:	POP CX
+		MOV AX,1
+		CALL TIMER
+		JMP INPUT
+		
+TIMER	PROC
+	PUSH  DX
+	PUSH  CX
+	PUSH  BX
+	MOV   BX, AX
+	MOV   AH, 2CH
+	INT   21H	     ;CH=hour(0-23),CL=minute(0-59),DH=second(0-59),DL=centisecond(0-100)
+	MOV   AL, DH
+	MOV   AH, 0
+	IMUL  AX,AX,1000
+	MOV   DH, 0
+	IMUL  DX,DX,10
+	ADD   AX, DX
+	CMP   BX, 0
+	JNZ   _T1
+	MOV   CS:_TS, AX
+_T0:	POP   BX
+	POP   CX
+	POP   DX
+	RET
+_T1:	SUB   AX, CS:_TS
+	JNC   _T2
+	ADD   AX, 60000
+_T2:	MOV   CX, 0
+	MOV   BX, 10
+_T3:	MOV   DX, 0
+	DIV   BX
+	PUSH  DX
+	INC   CX
+	CMP   AX, 0
+	JNZ   _T3
+	MOV   BX, 0
+_T4:	POP   AX
+	ADD   AL, '0'
+	MOV   CS:_TMSG[BX], AL
+	INC   BX
+	LOOP  _T4
+	PUSH  DS
+	MOV   CS:_TMSG[BX+0], 0AH
+	MOV   CS:_TMSG[BX+1], 0DH
+	MOV   CS:_TMSG[BX+2], '$'
+	LEA   DX, _TS+2
+	PUSH  CS
+	POP   DS
+	MOV   AH, 9
+	INT   21H
+	POP   DS
+	JMP   _T0
+_TS	DW    ?
+ 	DB    'Time elapsed in ms is '
+_TMSG	DB    12 DUP(0)
+TIMER   ENDP
+
+CODE	ENDS
+		END	START
