@@ -1,0 +1,18 @@
+#-----------------------------------------------------------
+# Vivado v2015.2 (64-bit)
+# SW Build 1266856 on Fri Jun 26 16:35:25 MDT 2015
+# IP Build 1264090 on Wed Jun 24 14:22:01 MDT 2015
+# Start of session at: Wed Jun 12 17:06:28 2019
+# Process ID: 7580
+# Log file: C:/Users/wzc-1748995976/Desktop/verilog/答案/2 -  _v3_2/project_1/vivado.log
+# Journal file: C:/Users/wzc-1748995976/Desktop/verilog/答案/2 -  _v3_2/project_1\vivado.jou
+#-----------------------------------------------------------
+start_gui
+open_project {C:/Users/wzc-1748995976/Desktop/verilog/答案/2 -  _v3_2/project_1/project_1.xpr}
+INFO: [Project 1-313] Project file moved from 'F:/vivado/2 -  _v3_2/project_1' since last save.
+CRITICAL WARNING: [Project 1-311] Could not find the file 'C:/Users/wzc-1748995976/Desktop/verilog/答案/实验2 -  简单组合电路设计_v3_2/Nexys4DDR_Master 2.xdc', nor could it be found using path 'F:/vivado/实验2 -  简单组合电路设计_v3_2/Nexys4DDR_Master 2.xdc'.
+CRITICAL WARNING: [Project 1-311] Could not find the file 'C:/Users/wzc-1748995976/Desktop/verilog/答案/实验2 -  简单组合电路设计_v3_2/Nexys4DDR_Master.xdc', nor could it be found using path 'F:/vivado/实验2 -  简单组合电路设计_v3_2/Nexys4DDR_Master.xdc'.
+Scanning sources...
+ERROR: [Common 17-70] Application Exception: SrcMgr::createSS : type not set
+exit
+INFO: [Common 17-206] Exiting Vivado at Wed Jun 12 19:07:04 2019...
