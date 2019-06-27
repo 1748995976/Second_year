@@ -1,4 +1,4 @@
-/* 
+ /* 
  * CS:APP Data Lab 
  * 
  * <Please put your name and userid here>
@@ -195,7 +195,7 @@ int byteNot(int x, int n) {
  *   Rating: 2 
  */
 int byteXor(int x, int y, int n) {
-  return !(!((x^y)&(0xFF<<(n<<3))));
+  return !(!((x^y)&(0xFF<<(n<<3))));//首先让它们异或，之后再判断它们异或之后的值是否为0
 }
 /* 
  *   logicalAnd - x && y
@@ -224,11 +224,11 @@ int logicalOr(int x, int y) {
  *   Rating: 3 
  */
 int rotateLeft(int x, int n) {
-  int a = (n&31);
-  int b = (x<<a);
-  int c = (~a)+32;
-  int d = (~(1<<31));
-  return (b|(((x>>1)&d)>>c));
+  int a = (n&31);//左移a位
+  int b = (x<<a);//左移
+  int c = (~a)+32;//右移c位
+  int d = (~(1<<31));//控制标志位，以便右移时左边补0
+  return (b|(((x>>1)&d)>>c));//将左移a位和右移c位之后的值拼合得到结果
 }
 /*
  * parityCheck - returns 1 if x contains an odd number of 1's
@@ -238,6 +238,7 @@ int rotateLeft(int x, int n) {
  *   Rating: 4
  */
 int parityCheck(int x) {
+//每次将数的低半数位与高半数位比较，最后取结果的最后一位
   x ^= x>>16;
   x ^= x>>8;
   x ^= x>>4;
@@ -255,7 +256,7 @@ int parityCheck(int x) {
  *   Rating: 2
  */
 int mul2OK(int x) {
-  return !(((x>>30)^(x>>31))&1);
+  return !(((x>>30)^(x>>31))&1);//若x的符号位为1，则第30位为0时会溢出；若x符号位为0，则第30位为1时会溢出
 }
 /*
  * mult3div2 - multiplies by 3/2 rounding toward 0,
@@ -269,8 +270,9 @@ int mul2OK(int x) {
  *   Rating: 2
  */
 int mult3div2(int x) {
-  int a = x + (x<<1);
-  int b = (a>>31)&1;
+//左移一位再+x即x*3,右移一位的时候，当a为负数的时候需要加1
+  int a = x + (x<<1);//a=3*x
+  int b = (a>>31)&1;//取的a的标志位
   return (a+b)>>1;
 }
 /* 
@@ -284,7 +286,7 @@ int mult3div2(int x) {
 int subOK(int x, int y) { 
   int a = ((~y)+1);
   int b = a+x;
-  return (((~(x^y))|(~(x^(b))))>>31)&1;
+  return (((~(x^y))|(~(x^(b))))>>31)&1;//x与(~y+1)符号位相同，并且x与x+~y+1的符号位相反，则溢出
 }
 /* 
  * absVal - absolute value of x
@@ -295,7 +297,7 @@ int subOK(int x, int y) {
  *   Rating: 4
  */
 int absVal(int x) {
-  return ((x>>31)^x)+((x>>31)&1);
+  return ((x>>31)^x)+((x>>31)&1);//当x符号位为0时，x绝对值就是x；当x符号位为1时，x绝对值是（~x+1）
 }
 /* 
  * float_abs - Return bit-level equivalent of absolute value of f for
